@@ -73,11 +73,25 @@ void runcommand(char **cline, int where) /* esegue un comando */
   /* processo padre: avendo messo exec e exit non serve "else" */
 
   /* la seguente istruzione non tiene conto della possibilita'
-     di comandi in background  (where == BACKGROUND) */
-
-  ret = wait(&exitstat);
+     di comandi in background (where == BACKGROUND) */
+  int options = WUNTRACED | WCONTINUED;
+  if (where == BACKGROUND) 
+  {
+    printf("Process id: %d\n", pid);
+    options = WNOHANG;
+  } 
+  ret = waitpid(pid, &exitstat, options);
   if (ret == -1)
     perror("wait");
+  if (WIFEXITED(exitstat)) {
+      printf("exited, status=%d\n", WEXITSTATUS(exitstat));
+  } else if (WIFSIGNALED(exitstat)) {
+      printf("killed by signal %d\n", WTERMSIG(exitstat));
+  } else if (WIFSTOPPED(exitstat)) {
+      printf("stopped by signal %d\n", WSTOPSIG(exitstat));
+  } else if (WIFCONTINUED(exitstat)) {
+      printf("continued\n");
+  }
 }
 
 int main()
