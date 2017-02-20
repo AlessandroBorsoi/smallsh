@@ -1,5 +1,7 @@
-#include "smallsh.h"
+#define _XOPEN_SOURCE
+#include <signal.h>
 #include <sys/types.h>
+#include "smallsh.h"
 
 char *prompt = "Dare un comando>";
 
@@ -55,6 +57,7 @@ void runcommand(char **cline, int where) /* esegue un comando */
 {
   pid_t pid;
   int exitstat, ret;
+  struct sigaction sa;
   pid = fork();
   if (pid == (pid_t)-1)
   {
@@ -80,18 +83,23 @@ void runcommand(char **cline, int where) /* esegue un comando */
     printf("Process id: %d\n", pid);
     options = WNOHANG;
   } 
+  sa.sa_handler = SIG_IGN;
+  sigemptyset(&sa.sa_mask);
+  sa.sa_flags = 0;
+  sigaction(SIGINT, &sa, NULL);
   ret = waitpid(pid, &exitstat, options);
+  sa.sa_handler = SIG_DFL;
+  sigaction(SIGINT, &sa, NULL);
   if (ret == -1)
     perror("wait");
-  if (WIFEXITED(exitstat)) {
+  if (WIFEXITED(exitstat))
       printf("exited, status=%d\n", WEXITSTATUS(exitstat));
-  } else if (WIFSIGNALED(exitstat)) {
+  else if (WIFSIGNALED(exitstat))
       printf("killed by signal %d\n", WTERMSIG(exitstat));
-  } else if (WIFSTOPPED(exitstat)) {
+  else if (WIFSTOPPED(exitstat))
       printf("stopped by signal %d\n", WSTOPSIG(exitstat));
-  } else if (WIFCONTINUED(exitstat)) {
+  else if (WIFCONTINUED(exitstat))
       printf("continued\n");
-  }
 }
 
 int main()
