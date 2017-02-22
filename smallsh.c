@@ -91,15 +91,15 @@ void runcommand(char **cline, int where) /* esegue un comando */
   sa.sa_handler = SIG_DFL;
   sigaction(SIGINT, &sa, NULL);
   if (ret == -1)
-    perror("wait");
+    perror("waitpid");
   if (WIFEXITED(exitstat))
-      printf("exited, status=%d\n", WEXITSTATUS(exitstat));
+    printf("Uscita con status = %d\n", WEXITSTATUS(exitstat));
   else if (WIFSIGNALED(exitstat))
-      printf("killed by signal %d\n", WTERMSIG(exitstat));
+    printf("Terminato da un segnale = %d\n", WTERMSIG(exitstat));
   else if (WIFSTOPPED(exitstat))
-      printf("stopped by signal %d\n", WSTOPSIG(exitstat));
+    printf("Stoppato da un segnale = %d\n", WSTOPSIG(exitstat));
   else if (WIFCONTINUED(exitstat))
-      printf("continued\n");
+    printf("Continua\n");
 }
 
 int main()
